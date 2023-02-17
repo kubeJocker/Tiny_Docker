@@ -1,31 +1,35 @@
 package main
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
+	"github.com/urfave/cli"
 	"os"
-	"os/exec"
-	"syscall"
 )
 
-const cgroupMemoryMount = "/sys/fs/cgroup/memory"
+const usage = `mydocker is a simple container runtime implementation.
+			   The purpose of this project is to learn how docker works and how to write a docker by ourselves
+			   Enjoy it, just for fun.`
 
-/*
-UTS Namespace主要用来隔离nodename和domainname两个系统标识。在UTS namespace里，每个namespace允许有自己的hostname。
-系统API 中的clone()创建新的进程。根据填入的参数来判断哪些namesapce会被创建，而且它们的子进程也会被包含到这些namespace中。
-*/
 func main() {
-	if os.Args[0] == "/proc/self/exe" {
-		cmd := exec.Command("sh")
-		cmd.SysProcAttr = &syscall.SysProcAttr{
-			Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWIPC | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWUSER | syscall.CLONE_NEWNET,
-		}
-		cmd.Stdin = os.Stdin
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
+	app := cli.NewApp()
+	app.Name = "mydocker"
+	app.Usage = usage
 
-		if err := cmd.Run(); err != nil {
-			log.Fatal(err)
-		}
+	app.Commands = []cli.Command{
+		initCommand,
+		runCommand,
+	}
+
+	app.Before = func(context *cli.Context) error {
+		// Log as JSON instead of the default ASCII formatter.
+		log.SetFormatter(&log.JSONFormatter{})
+
+		log.SetOutput(os.Stdout)
+		return nil
+	}
+
+	if err := app.Run(os.Args); err != nil {
+		log.Fatal(err)
 	}
 
 }
