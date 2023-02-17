@@ -10,7 +10,7 @@ import (
 )
 
 func Run(tty bool, comArray []string, res *subsystems.ResourceConfig) {
-	parent := container.NewParentProcess(tty)
+	parent, writePipe := container.NewParentProcess(tty)
 	if parent == nil {
 		log.Errorf("New parent process error")
 		return
@@ -18,13 +18,13 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig) {
 	if err := parent.Start(); err != nil {
 		log.Error(err)
 	}
-
 	cgroupManager := cgroup.NewCgroupManager("tinydocker-cgroup")
 	defer cgroupManager.Destroy()
 	cgroupManager.Set(res)
 	cgroupManager.Apply(parent.Process.Pid)
 	sendInitCommand(comArray, writePipe)
 	parent.Wait()
+	os.Exit(0)
 }
 
 func sendInitCommand(comArray []string, writePipe *os.File) {
