@@ -1,15 +1,13 @@
 package main
 
 import (
-	"TinyDocker/cgroup"
-	subsystems "TinyDocker/cgroup/subsystem"
 	"TinyDocker/container"
 	log "github.com/sirupsen/logrus"
 	"os"
 	"strings"
 )
 
-func Run(tty bool, comArray []string, res *subsystems.ResourceConfig) {
+func Run(tty bool, comArray []string, volume string) {
 	parent, writePipe := container.NewParentProcess(tty)
 	if parent == nil {
 		log.Errorf("New parent process error")
@@ -18,12 +16,11 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig) {
 	if err := parent.Start(); err != nil {
 		log.Error(err)
 	}
-	cgroupManager := cgroup.NewCgroupManager("tinydocker-cgroup")
-	defer cgroupManager.Destroy()
-	cgroupManager.Set(res)
-	cgroupManager.Apply(parent.Process.Pid)
 	sendInitCommand(comArray, writePipe)
 	parent.Wait()
+	mntURL := "/root/mnt"
+	rootURL := "/root"
+	container.DeleteWorkSpace(rootURL, mntURL, volume)
 	os.Exit(0)
 }
 
