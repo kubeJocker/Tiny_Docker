@@ -18,6 +18,7 @@ func NewCgroupManager(path string) *CgroupManager {
 	}
 }
 
+// 将进程pid加入到这个cgroup中
 func (c *CgroupManager) Apply(pid int) error {
 	for _, subSysIns := range subsystems.SubsystemsIns {
 		subSysIns.Apply(c.Path, pid)
@@ -25,6 +26,7 @@ func (c *CgroupManager) Apply(pid int) error {
 	return nil
 }
 
+// 设置cgroup资源限制
 func (c *CgroupManager) Set(res *subsystems.ResourceConfig) error {
 	for _, subSysIns := range subsystems.SubsystemsIns {
 		subSysIns.Set(c.Path, res)
