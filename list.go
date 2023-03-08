@@ -11,8 +11,10 @@ import (
 )
 
 func ListContainers() {
+	//找到存储容器信息的路径 /var/run/mydocker
 	dirUrl := fmt.Sprintf(container.DefaultInfoLocation, "")
 	dirUrl = dirUrl[:len(dirUrl)-1]
+	//读取该文件夹下的所有文件
 	files, err := ioutil.ReadDir(dirUrl)
 	if err != nil {
 		log.Errorf("Read dir %s error %v", dirUrl, err)
@@ -20,6 +22,7 @@ func ListContainers() {
 	}
 	var containers []*container.ContainerInfo
 	for _, file := range files {
+		//将配置文件中的信息转换为容器信息的对象
 		tmpContainer, err := getConainterInfo(file)
 		if err != nil {
 			log.Errorf("Get container info error %v", err)
@@ -28,6 +31,7 @@ func ListContainers() {
 		containers = append(containers, tmpContainer)
 	}
 
+	//使用控制台打印出容器信息
 	w := tabwriter.NewWriter(os.Stdout, 12, 1, 3, ' ', 0)
 	fmt.Fprint(w, "ID\tNAME\tPID\tSTATUS\tCOMMAND\tCREATED\n")
 	for _, item := range containers {
@@ -39,12 +43,15 @@ func ListContainers() {
 			item.Command,
 			item.CreatedTime)
 	}
+
+	//刷新标准输出流缓冲区，将容器列表打印出来
 	if err := w.Flush(); err != nil {
 		log.Errorf("Flush error %v", err)
 		return
 	}
 }
 
+// 将配置文件中的信息转换为容器信息对象
 func getConainterInfo(file os.FileInfo) (*container.ContainerInfo, error) {
 	containerName := file.Name()
 	configFileDir := fmt.Sprintf(container.DefaultInfoLocation, containerName)

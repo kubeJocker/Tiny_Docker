@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// 通过/proc/self/mountinfo 找出挂载了某个subsystem的herarchy cgroup根节点所在的目录
 func FindCgroupMountpoint(subsystem string) string {
 	f, err := os.Open("/proc/self/mountinfo")
 	if err != nil {
@@ -32,6 +33,7 @@ func FindCgroupMountpoint(subsystem string) string {
 	return ""
 }
 
+// cgroup在文件系统中的绝对路径
 func GetCgroupPath(subsystem string, cgroupPath string, autoCreate bool) (string, error) {
 	cgroupRoot := FindCgroupMountpoint(subsystem)
 	if _, err := os.Stat(path.Join(cgroupRoot, cgroupPath)); err == nil || (autoCreate && os.IsNotExist(err)) {

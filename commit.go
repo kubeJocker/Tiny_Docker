@@ -7,6 +7,8 @@ import (
 	"os/exec"
 )
 
+// 将容器文件系统打包成${imagename}.tar文件
+// 使用子目录集合制作镜像
 func commitContainer(containerName, imageName string) {
 	mntURL := fmt.Sprintf(container.MntUrl, containerName)
 	mntURL += "/"

@@ -12,6 +12,7 @@ import (
 )
 
 func stopContainer(containerName string) {
+	//获取PID
 	pid, err := GetContainerPidByName(containerName)
 	if err != nil {
 		log.Errorf("Get contaienr pid by name %s error %v", containerName, err)
@@ -22,10 +23,12 @@ func stopContainer(containerName string) {
 		log.Errorf("Conver pid from string to int error %v", err)
 		return
 	}
+	//调用kill发送信号给进程，通过传递syscall.SIGTERM信号，杀掉容器主进程
 	if err := syscall.Kill(pidInt, syscall.SIGTERM); err != nil {
 		log.Errorf("Stop container %s error %v", containerName, err)
 		return
 	}
+	//获取容器信息，修改状态为STOP，并覆盖之前的信息
 	containerInfo, err := getContainerInfoByName(containerName)
 	if err != nil {
 		log.Errorf("Get container %s info error %v", containerName, err)
